@@ -8,7 +8,7 @@
 
 Name:           python-%{pkgname}
 Version:        4.2.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Scalable, non-blocking web server and tools
 
 Group:          Development/Libraries
@@ -21,6 +21,9 @@ Source0:        https://files.pythonhosted.org/packages/source/t/%{pkgname}/%{pk
 Source1:        LICENSE
 # Patch to use system CA certs instead of certifi
 Patch0:         python-tornado-cert.patch
+# Improve introspection of coroutines
+# Fixed upstream: https://github.com/tornadoweb/tornado/pull/1890
+Patch1:         improve-introspection-of-coroutines.patch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -91,6 +94,7 @@ server and and tools. This package contains some example applications.
 cp -a %{SOURCE1} .
 
 %patch0 -p1
+%patch1 -p1
 
 # remove shebang from files
 %{__sed} -i.orig -e '/^#!\//, 1d' *py tornado/*.py tornado/*/*.py
@@ -169,6 +173,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Nov 22 2018 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-5
+- Improve introspection of coroutines
+Resolves: rhbz#1607838
+
 * Mon Apr 16 2018 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-4
 - Add mod_wsgi as a build dependency
 Resolves: rhbz#1533902
