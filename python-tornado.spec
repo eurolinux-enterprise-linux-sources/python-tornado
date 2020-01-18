@@ -8,7 +8,7 @@
 
 Name:           python-%{pkgname}
 Version:        4.2.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Scalable, non-blocking web server and tools
 
 Group:          Development/Libraries
@@ -26,10 +26,13 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  python2-devel
 BuildRequires:  python-backports-ssl_match_hostname
+
+BuildRequires:  mod_wsgi
+
 Requires:       python-pycurl
 Requires:       python-backports-ssl_match_hostname
 %if 0%{?with_python3}
-BuildRequires:  python-tools
+BuildRequires:  python3-tools
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
 %endif
@@ -166,6 +169,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Apr 16 2018 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-4
+- Add mod_wsgi as a build dependency
+Resolves: rhbz#1533902
+
 * Tue Oct 03 2017 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-3
 - Fix an rpmlint issue with an un-escaped macro in the changelog.
 Resolves: rhbz#1496516
