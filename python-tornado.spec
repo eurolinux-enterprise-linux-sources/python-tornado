@@ -8,13 +8,17 @@
 
 Name:           python-%{pkgname}
 Version:        4.2.1
-Release:        1%{?dist}
+Release:        3%{?dist}
 Summary:        Scalable, non-blocking web server and tools
 
 Group:          Development/Libraries
 License:        ASL 2.0
 URL:            http://www.tornadoweb.org
 Source0:        https://files.pythonhosted.org/packages/source/t/%{pkgname}/%{pkgname}-%{version}.tar.gz
+# The license file from upstream is not included in the tarball from pypi
+# so we add it manually from the project's github repository.
+# https://github.com/tornadoweb/tornado/blob/master/LICENSE
+Source1:        LICENSE
 # Patch to use system CA certs instead of certifi
 Patch0:         python-tornado-cert.patch
 
@@ -81,6 +85,8 @@ server and and tools. This package contains some example applications.
 %prep 
 %setup -q -n %{pkgname}-%{version}
 
+cp -a %{SOURCE1} .
+
 %patch0 -p1
 
 # remove shebang from files
@@ -135,6 +141,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc README.rst PKG-INFO
+%license LICENSE
 
 %{python2_sitearch}/%{pkgname}/
 %{python2_sitearch}/%{pkgname}-%{version}-*.egg-info
@@ -147,6 +154,7 @@ rm -rf %{buildroot}
 %files -n python3-tornado
 %defattr(-,root,root,-)
 %doc README.rst PKG-INFO
+%license LICENSE
 
 %{python3_sitearch}/%{pkgname}/
 %{python3_sitearch}/%{pkgname}-%{version}-*.egg-info
@@ -158,6 +166,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Oct 03 2017 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-3
+- Fix an rpmlint issue with an un-escaped macro in the changelog.
+Resolves: rhbz#1496516
+
+* Wed Sep 27 2017 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-2
+- Provide the license file that was not included in the pypi tarball.
+Resolves: rhbz#1463675
+
 * Mon Feb 06 2017 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-1
 - Upgrade to upstream release 4.2.1
 Resolves: rhbz#1158617
@@ -204,7 +220,7 @@ Resolves: rhbz#1158617
 - new upstream version 2.1.1
 - remove double word in description and rearrange it (#715272)
 - fixed removal of shebangs
-- added %check section to run unittests during package build
+- added %%check section to run unittests during package build
 
 * Tue Mar 29 2011 Ionuț C. Arțăriși <mapleoin@fedoraproject.org> - 1.2.1-1
 - new upstream version 1.2.1
