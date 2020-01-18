@@ -7,20 +7,20 @@
 %global pkgname tornado
 
 Name:           python-%{pkgname}
-Version:        2.2.1
-Release:        8%{?dist}
+Version:        4.2.1
+Release:        1%{?dist}
 Summary:        Scalable, non-blocking web server and tools
 
 Group:          Development/Libraries
 License:        ASL 2.0
 URL:            http://www.tornadoweb.org
-Source0:        http://github.com/downloads/facebook/%{pkgname}/%{pkgname}-%{version}.tar.gz
-Patch0:         python-tornado-removed-custom-match_hostname.patch
+Source0:        https://files.pythonhosted.org/packages/source/t/%{pkgname}/%{pkgname}-%{version}.tar.gz
+# Patch to use system CA certs instead of certifi
+Patch0:         python-tornado-cert.patch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildArch:      noarch
 
-BuildRequires:  python-devel
+BuildRequires:  python2-devel
 BuildRequires:  python-backports-ssl_match_hostname
 Requires:       python-pycurl
 Requires:       python-backports-ssl_match_hostname
@@ -29,6 +29,9 @@ BuildRequires:  python-tools
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
 %endif
+
+Provides:    python2-tornado = %{version}-%{release}
+Provides:    python2-tornado%{?_isa} = %{version}-%{release}
 
 %description
 Tornado is an open source version of the scalable, non-blocking web
@@ -43,7 +46,9 @@ ideal for real-time web services.
 %package doc
 Summary:        Examples for python-tornado
 Group:          Documentation
-Requires:       python-tornado = %{version}-%{release}
+Requires:       python-tornado%{?_isa} = %{version}-%{release}
+Provides:		python2-tornado-doc = %{version}-%{release}
+Provides:		python2-tornado-doc%{?_isa} = %{version}-%{release}
 
 %description doc
 Tornado is an open source version of the scalable, non-blocking web
@@ -65,7 +70,7 @@ ideal for real-time web services.
 %package -n python3-tornado-doc
 Summary:        Examples for python-tornado
 Group:          Documentation
-Requires:       python3-tornado = %{version}-%{release}
+Requires:       python3-tornado%{?_isa} = %{version}-%{release}
 
 %description -n python3-tornado-doc
 Tornado is an open source version of the scalable, non-blocking web
@@ -103,13 +108,13 @@ rm -rf %{buildroot}
 
 %if 0%{?with_python3}
 pushd %{py3dir}
-    PATH=$PATH:%{buildroot}%{python3_sitelib}/%{pkgname}
-    python3 setup.py install --root=%{buildroot}
+    PATH=$PATH:%{buildroot}%{python3_sitearch}/%{pkgname}
+    %{__python3} setup.py install --root=%{buildroot}
 popd
 %endif # with_python3
 
-PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
-python setup.py install --root=%{buildroot}
+PATH=$PATH:%{buildroot}%{python2_sitearch}/%{pkgname}
+%{__python2} setup.py install --root=%{buildroot}
 
 
 %clean
@@ -119,18 +124,20 @@ rm -rf %{buildroot}
 %if "%{dist}" != ".el6"
     %if 0%{?with_python3}
     pushd %{py3dir}
-        python3 -m unittest discover -s tornado/test -p *test.py || :
+        PYTHONPATH=%{python3_sitearch} \
+        %{__python3} -m tornado.test.runtests --verbose
     popd
     %endif # with_python3
-    python -m unittest discover -s tornado/test -p *test.py
+    PYTHONPATH=%{python2_sitearch} \
+    %{__python2} -m tornado.test.runtests --verbose
 %endif
 
 %files
 %defattr(-,root,root,-)
-%doc README PKG-INFO
+%doc README.rst PKG-INFO
 
-%{python_sitelib}/%{pkgname}/
-%{python_sitelib}/%{pkgname}-%{version}-*.egg-info
+%{python2_sitearch}/%{pkgname}/
+%{python2_sitearch}/%{pkgname}-%{version}-*.egg-info
 
 %files doc
 %defattr(-,root,root,-)
@@ -139,10 +146,10 @@ rm -rf %{buildroot}
 %if 0%{?with_python3}
 %files -n python3-tornado
 %defattr(-,root,root,-)
-%doc README PKG-INFO
+%doc README.rst PKG-INFO
 
-%{python3_sitelib}/%{pkgname}/
-%{python3_sitelib}/%{pkgname}-%{version}-*.egg-info
+%{python3_sitearch}/%{pkgname}/
+%{python3_sitearch}/%{pkgname}-%{version}-*.egg-info
 
 %files -n python3-tornado-doc
 %defattr(-,root,root,-)
@@ -151,6 +158,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Feb 06 2017 Charalampos Stratakis <cstratak@redhat.com> - 4.2.1-1
+- Upgrade to upstream release 4.2.1
+Resolves: rhbz#1158617
+
 * Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 2.2.1-8
 - Mass rebuild 2013-12-27
 
